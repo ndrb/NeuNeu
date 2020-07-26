@@ -4,8 +4,9 @@
 # VotreNom (VotreMatricule) .~= À MODIFIER =~.
 ###
 
-from pdb import set_trace as dbg  # Utiliser dbg() pour faire un break dans votre code.
 
+# Utiliser dbg() pour faire un break dans votre code.
+from pdb import set_trace as dbg
 import numpy as np
 
 
@@ -19,21 +20,108 @@ class ReseauDeNeurones:
         self.alpha = alpha
         self.T = T
 
+    """
+    Initialise la matrice de poids W entre la couche d'entree et la
+    couche cachee, puis le vector de connexions w entre la couche cachee et le neurone de sortie. W est
+    donc un tableau Numpy a deux dimensions (matrice) et w est un tableau Numpy a une dimension (vector).
+    Plus speciquement, la valeur de la connexion entre le ie neurone cache et la je entree xj correspond
+    a W[i,j]. De plus, la connexion entre le ie neurone cache et le neurone de sortie correspond
+    a w[i]. Cette methode est deja implementee.
+    """
     def initialisation(self, W, w):
         self.W = W
         self.w = w
 
+    """
+    Retourne la paire (W,w) de la matrice de connexions W (c'est-a-dire une
+    matrice Numpy W) et du vector de connexions w (c'est-a-dire un vector Numpy w) du reseau de
+    neurones. Cette methode est deja implementee.
+    """
     def parametres(self):
         return (self.W, self.w)
 
+    """
+    Retourne la prediction par le reseau de neurones de la classe d'une entree,
+    representee par un vecteur Numpy x. Cette prediction doit donc etre 0 ou 1.
+    """
     def prediction(self, x):
         #TODO: .~= À COMPLÉTER =~.
         pass
 
+    """
+    Met a jour les parametres du reseau de neurones a l'aide de sa regle
+    d'apprentissage, a partir d'une entree x (vecteur Numpy) et de sa classe cible y (0 ou 1).
+    """
     def mise_a_jour(self, x, y):
         #TODO: .~= À COMPLÉTER =~.
         pass
 
+    """
+    Entraine le reseau de neurones durant T iterations sur l'ensemble
+    d'entrainement forme des entrees X (une matrice Numpy, ou la t^e rangee correspond a l'entree xt) et
+    des classes cibles Y (un vecteur Numpy ou le t^e element correspond a la cible yt). Il est recommande
+    d'appeler votre methode mise a jour(self, x, y) a l'interieur de entrainement(self, X, Y).
+    """
     def entrainement(self, X, Y):
         #TODO: .~= À COMPLÉTER =~.
+
+        #TRUTH:
+        # W is the matrice de poids so it contains the values between two nodes.
+        # W[i,j] represents the connection between the i hidden neurone and the j input neuron
+        # w[i] contains the weight between the i hidden neuron the output neurone
+
+        #Build the neurones that represent the hidden layer of our net
+        #Init une liste qui sera notre hidden layer
+        hidden_layer = [0] * len(self.W)
+
+        #Populate the elements of our network LOL
+        for i in range(len(hidden_layer)):
+            cumulative_sum = 0
+            #Calculate the value of the node, you will need the logistic function, but first you need the summation of:
+            #input_node_value*edge_weight
+            for j in range(len(self.W[i])):
+                cumulative_sum += self.W[i,j]*X[j]
+            hidden_layer[i] = logistic(cumulative_sum)
+
+
+        #Calculate final value of our last output node
+        cumu = 0
+        for i  in range(len(hidden_layer)):
+            cumu += hidden_layer[i]*self.w[i]
+        final_value = logistic(cumu)
+
+        #Now that we have our network ready-ish, we want to back-propagate
+        final_delta = 1-final_value
+
+        hidden_layer_deltas = [0] * len(self.W)
+
+        for i in range(len(hidden_layer_deltas)):
+            hidden_layer_deltas[i] = hidden_layer[i] * (1-hidden_layer[i])  * self.w[i] * final_delta
+
+        #rows, cols = (len(self.W), len(self.W[0]))
+        #input_layer_deltas = [[0]*cols]*rows
+
+
+        """
+        print("KMS")
+        print(len(X))
+        print(len(X[5]))
+        print("KMS")
+        print(len(self.W))
+        print(len(self.W[5]))
+        print("KMS")
+        print(len(input_layer_deltas))
+        print(len(input_layer_deltas[5]))
+        print("KMS")
+        """
+        #TODO: Update the values of each weight
+        #TODO: Figure out wtf is going on, is X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over?
+        for i in range(len(self.W)):
+            for j in range(len(self.W[i])):
+                #print(X[j])
+                #print(hidden_layer_deltas[i])
+                lol = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
+                #print(lol)
+                #self.W[i,j] = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
+
         pass
