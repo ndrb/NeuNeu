@@ -36,15 +36,33 @@ class Probabilite():
         self.freqWC = defaultdict(lambda: 0.)
 
         # Vocabulaire des mots contenus dans tous les documents.
+        #TODO: When should i modify this?
         self.vocabulaire = []
 
+    """
+    Calcule la probabilite a priori d'une classe. Par example, soit P un object
+    de classe Probabilite, P.probClasses(C=0) retournera l'estimation de P(C = 0) (i.e. la
+    probabilite a priori qu'un courriel soit un pourriel).
+    P(C=c) = (# de document de categorie c) / (# de documents total) = |{t | ct = c}| / T
+    """
     def probClasse(self, C):
-        #TODO: .~= À COMPLÉTER =~.
-        return 0.0
+        # P(C=c) = (# de document de categorie c) / (# de documents total)
+        #TODO: Why when i print C its a list and not just one value?
+        total_docs = self.nbDocsParClasse[0] + self.nbDocsParClasse[1]
+        if C == 0 or C == 1:
+            proba_class = self.nbDocsParClasse[C] / total_docs
+            return proba_class
+        else:
+            return 1
 
+
+    """
+    P(Wi=w|C=c) = # de fois que w apparait dans tous les documents de la categorie c / # de mots total dans les docs de cat c
+    """
     def probMotEtantDonneClasse(self, C, W, delta):
-        #TODO: .~= À COMPLÉTER =~.
-        return 0.0
+        #TODO: Should the delta be used somewhere in the denominator?
+        proba_mot_class = (delta+(self.freqWC[(W,C)])) / self.nbMotsParClasse[C]
+        return proba_mot_class
 
     def __call__(self, C, W=None, delta=None):
         if W is None:
@@ -64,8 +82,34 @@ class Probabilite():
 # retour: Un 'set' contenant l'ensemble des mots ('str') du vocabulaire.
 #
 def creerVocabulaire(documents, seuil):
-    #TODO: .~= À COMPLÉTER =~.
-    return set()
+    vocab = set()
+    dict_vocab = dict() #dict_vocab[key] = value
+    for doc in range(len(documents)):
+        # Now I want to standardize my words in docs_word_list
+
+        # You can remove all capitals
+        lower_doc = documents[doc].lower()
+        docs_word_list = lower_doc.split(' ')
+
+        #You can remove stop words (déterminant, pronom, vers commun comme être, avoir, faire)
+        #Lemmatize the words so everything becomes infinitif
+
+        # I want to iterate over docs_word_list and count the words I see while adding to dict_vocab
+        for i in range(len(docs_word_list)):
+            word = docs_word_list[i]
+            if word in dict_vocab:
+                cu_count = dict_vocab[word]
+                cu_count += 1
+                dict_vocab[word] = cu_count
+            else:
+                dict_vocab[word] = 1
+
+    # Iterate over dict_vocab
+    for k,v in dict_vocab.items():
+        if v >= seuil:
+            vocab.add(k)
+
+    return vocab
 
 
 # pretraiter: Fonction qui remplace les mots qui ne font pas parti du vocabulaire
@@ -78,8 +122,15 @@ def creerVocabulaire(documents, seuil):
 # retour: Une 'list' des mots contenu dans le document et présent dans le vocabulaire.
 #
 def pretraiter(doc, V):
-    #TODO: .~= À COMPLÉTER =~.
-    return doc.split()
+    words_list = doc.split(' ')
+    new_doc = []
+    for i in range(len(words_list)):
+        word = words_list[i]
+        if word in V:
+            new_doc.append(word)
+        else:
+            new_doc.append("OOV")
+    return new_doc
 
 
 # entrainer: Fonction permettant d'entraîner les distributions P(C) et P(W|C)
@@ -95,8 +146,59 @@ def pretraiter(doc, V):
 # retour: Rien! L'objet P doit être modifié via ses dictionnaires.
 #
 def entrainer(corpus, P):
-    #TODO: .~= À COMPLÉTER =~.
-    pass
+    # Fill in nbMotsParClasse: Nb. de mots total dans les documents de la catégorie c.
+    nbMotsParClasseZero = 0
+    nbMotsParClasseUn = 0
+
+    # Fill in nbDocsParClasse, Nb. de documents de la catégorie c.
+    nbDocsParClasseZero = 0
+    nbDocsParClasseUn = 0
+
+    # Fill in freqWCNb. de fois que le mot w apparaît dans les documents de la catégorie c.
+    # freqWC[('allo', 0)] donne le nombre de fois que allo apparait dans les docs de cat 0
+    freqWCNbZero = dict()
+    freqWCNbUn = dict()
+
+    # i == (["Mon", "courriel", "..."], 1)
+    for i in range(len(corpus)):
+        if corpus[i][1] == 0:
+            nbMotsParClasseZero += len(corpus[i][0])
+            nbDocsParClasseZero += 1
+            for j in range(len(corpus[i][0])):
+                word = corpus[i][0][j]
+                if word in freqWCNbZero:
+                    counter = freqWCNbZero[word]
+                    counter += 1
+                    freqWCNbZero[word] = counter
+                else:
+                    freqWCNbZero[word] = 1
+                    freqWCNbZero[word] = 1
+        else:
+            nbMotsParClasseUn += len(corpus[i][0])
+            nbDocsParClasseUn += 1
+            for j in range(len(corpus[i][0])):
+                word = corpus[i][0][j]
+                if word in freqWCNbUn:
+                    counter = freqWCNbUn[word]
+                    counter += 1
+                    freqWCNbUn[word] = counter
+                else:
+                    freqWCNbUn[word] = 1
+                    freqWCNbUn[word] = 1
+
+    #Populate the values of P
+    #k,v where k is the class number and v is the value
+    P.nbMotsParClasse[0] = nbMotsParClasseZero
+    P.nbMotsParClasse[1] = nbMotsParClasseUn
+
+    P.nbDocsParClasse[0] = nbDocsParClasseZero
+    P.nbDocsParClasse[1] = nbDocsParClasseUn
+
+    for k,v in freqWCNbZero.items():
+        P.freqWC[(k,0)] = v
+
+    for k,v in freqWCNbUn.items():
+        P.freqWC[(k, 1)] = v
 
 
 # predire: Fonction utilisée pour trouver la classe la plus probable à quelle
@@ -115,5 +217,18 @@ def entrainer(corpus, P):
 #         d'un document D=[w_1,...,w_d] et de catégorie c, i.e. P(C=c,D=[w_1,...,w_d]). *N'oubliez pas vos logarithmes!
 #
 def predire(doc, P, C, delta):
-    #TODO: .~= À COMPLÉTER =~.
-    return 1, 0.0
+    #Start by calculating the porba posteriori pour chaque class, on commence par ajouter P(C=c)
+    proba_posteriori_zero = math.log(P.probClasse(C))
+    proba_posteriori_un = math.log(P.probClasse(C))
+
+    #Sum of log P(Wi=wi | C=c)
+    for i in range(len(doc)):
+        word = doc[i]
+        proba_posteriori_zero += math.log(P(word,0,delta))
+        proba_posteriori_un += math.log(P(word, 1, delta))
+
+    #Then take the max argument and return
+    if proba_posteriori_zero >= proba_posteriori_un:
+        return 0, proba_posteriori_zero
+    else:
+        return 1, proba_posteriori_un
