@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #####
-# VotreNom (VotreMatricule) .~= À MODIFIER =~.
+# Nader Baydoun (20156885)
 ###
 
 
@@ -54,6 +54,7 @@ class ReseauDeNeurones:
     """
     def mise_a_jour(self, x, y):
         #TODO: .~= À COMPLÉTER =~.
+        # entrainement function does the looping and mise_a_jour updates the values
         pass
 
     """
@@ -69,59 +70,47 @@ class ReseauDeNeurones:
         # W is the matrice de poids so it contains the values between two nodes.
         # W[i,j] represents the connection between the i hidden neurone and the j input neuron
         # w[i] contains the weight between the i hidden neuron the output neurone
+        # X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over
 
         #Build the neurones that represent the hidden layer of our net
-        #Init une liste qui sera notre hidden layer
+        #Initialise a list that will be our hidden layer
         hidden_layer = [0] * len(self.W)
 
-        #Populate the elements of our network LOL
-        for i in range(len(hidden_layer)):
-            cumulative_sum = 0
-            #Calculate the value of the node, you will need the logistic function, but first you need the summation of:
-            #input_node_value*edge_weight
-            for j in range(len(self.W[i])):
-                cumulative_sum += self.W[i,j]*X[j]
-            hidden_layer[i] = logistic(cumulative_sum)
+        #TODO: REMOVE
+        self.T = 5
+        for iteration in range(self.T):
+            for input in range(len(X)):
+                # Populate the elements of our network
+                for i in range(len(hidden_layer)):
+                    cumulative_sum = 0
+                    # Calculate the value of the node, you will need the logistic function, but first you need the summation of:
+                    # input_node_value*edge_weight
+                    for j in range(len(self.W[i])):
+                        cumulative_sum += self.W[i, j] * X[j]
+                    hidden_layer[i] = logistic(cumulative_sum)
 
+                # Calculate final value of our last output node
+                cumulative = 0
+                for i in range(len(hidden_layer)):
+                    cumulative += hidden_layer[i] * self.w[i]
+                final_value = logistic(cumulative)
 
-        #Calculate final value of our last output node
-        cumu = 0
-        for i  in range(len(hidden_layer)):
-            cumu += hidden_layer[i]*self.w[i]
-        final_value = logistic(cumu)
+                # Now that we have our network ready-ish, we want to back-propagate
+                final_delta = 1 - final_value
 
-        #Now that we have our network ready-ish, we want to back-propagate
-        final_delta = 1-final_value
+                hidden_layer_deltas = [0] * len(self.W)
 
-        hidden_layer_deltas = [0] * len(self.W)
+                for i in range(len(hidden_layer_deltas)):
+                    hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * final_delta
 
-        for i in range(len(hidden_layer_deltas)):
-            hidden_layer_deltas[i] = hidden_layer[i] * (1-hidden_layer[i])  * self.w[i] * final_delta
+                # TODO: We have to compare to Y before back-propagating
+                # TODO: Update the values of each weight
 
-        #rows, cols = (len(self.W), len(self.W[0]))
-        #input_layer_deltas = [[0]*cols]*rows
-
-
-        """
-        print("KMS")
-        print(len(X))
-        print(len(X[5]))
-        print("KMS")
-        print(len(self.W))
-        print(len(self.W[5]))
-        print("KMS")
-        print(len(input_layer_deltas))
-        print(len(input_layer_deltas[5]))
-        print("KMS")
-        """
-        #TODO: Update the values of each weight
-        #TODO: Figure out wtf is going on, is X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over?
-        for i in range(len(self.W)):
-            for j in range(len(self.W[i])):
-                #print(X[j])
-                #print(hidden_layer_deltas[i])
-                lol = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
-                #print(lol)
-                #self.W[i,j] = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
-
+                for i in range(len(self.W)):
+                    for j in range(len(self.W[i])):
+                        # print(X[j])
+                        # print(hidden_layer_deltas[i])
+                        lol = self.W[i, j] + self.alpha * X[j] * hidden_layer_deltas[i]
+                        # print(lol)
+                        # self.W[i,j] = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
         pass

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #####
-# VotreNom (VotreMatricule) .~= À MODIFIER =~.
+# Nader Baydoun (20156885)
 ###
 
 from pdb import set_trace as dbg  # Utiliser dbg() pour faire un break dans votre code.
@@ -36,7 +36,6 @@ class Probabilite():
         self.freqWC = defaultdict(lambda: 0.)
 
         # Vocabulaire des mots contenus dans tous les documents.
-        #TODO: When should i modify this?
         self.vocabulaire = []
 
     """
@@ -47,21 +46,17 @@ class Probabilite():
     """
     def probClasse(self, C):
         # P(C=c) = (# de document de categorie c) / (# de documents total)
-        #TODO: Why when i print C its a list and not just one value?
         total_docs = self.nbDocsParClasse[0] + self.nbDocsParClasse[1]
-        if C == 0 or C == 1:
-            proba_class = self.nbDocsParClasse[C] / total_docs
-            return proba_class
-        else:
-            return 1
+        proba_class = self.nbDocsParClasse[C] / total_docs
+        return proba_class
+
 
 
     """
     P(Wi=w|C=c) = # de fois que w apparait dans tous les documents de la categorie c / # de mots total dans les docs de cat c
     """
     def probMotEtantDonneClasse(self, C, W, delta):
-        #TODO: Should the delta be used somewhere in the denominator?
-        proba_mot_class = (delta+(self.freqWC[(W,C)])) / self.nbMotsParClasse[C]
+        proba_mot_class = (delta+(self.freqWC[(W,C)])) / ((len(self.vocabulaire)+1)*delta + self.nbMotsParClasse[C])
         return proba_mot_class
 
     def __call__(self, C, W=None, delta=None):
@@ -84,12 +79,13 @@ class Probabilite():
 def creerVocabulaire(documents, seuil):
     vocab = set()
     dict_vocab = dict() #dict_vocab[key] = value
-    for doc in range(len(documents)):
+
+    for j in range(len(documents)):
         # Now I want to standardize my words in docs_word_list
 
         # You can remove all capitals
-        lower_doc = documents[doc].lower()
-        docs_word_list = lower_doc.split(' ')
+        #lower_doc = documents[j].lower()
+        docs_word_list = documents[j].split() #same as using split(' ')
 
         #You can remove stop words (déterminant, pronom, vers commun comme être, avoir, faire)
         #Lemmatize the words so everything becomes infinitif
@@ -109,6 +105,7 @@ def creerVocabulaire(documents, seuil):
         if v >= seuil:
             vocab.add(k)
 
+
     return vocab
 
 
@@ -122,7 +119,7 @@ def creerVocabulaire(documents, seuil):
 # retour: Une 'list' des mots contenu dans le document et présent dans le vocabulaire.
 #
 def pretraiter(doc, V):
-    words_list = doc.split(' ')
+    words_list = doc.split()
     new_doc = []
     for i in range(len(words_list)):
         word = words_list[i]
@@ -130,6 +127,7 @@ def pretraiter(doc, V):
             new_doc.append(word)
         else:
             new_doc.append("OOV")
+
     return new_doc
 
 
@@ -218,13 +216,13 @@ def entrainer(corpus, P):
 #
 def predire(doc, P, C, delta):
     #Start by calculating the porba posteriori pour chaque class, on commence par ajouter P(C=c)
-    proba_posteriori_zero = math.log(P.probClasse(C))
-    proba_posteriori_un = math.log(P.probClasse(C))
+    proba_posteriori_zero = math.log(P.probClasse(C[0]))
+    proba_posteriori_un = math.log(P.probClasse(C[1]))
 
     #Sum of log P(Wi=wi | C=c)
     for i in range(len(doc)):
         word = doc[i]
-        proba_posteriori_zero += math.log(P(word,0,delta))
+        proba_posteriori_zero += math.log(P(word, 0, delta))
         proba_posteriori_un += math.log(P(word, 1, delta))
 
     #Then take the max argument and return
