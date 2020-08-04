@@ -102,7 +102,7 @@ class ReseauDeNeurones:
                 #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * cumulative_sum(w(i,j)*delta[j])
                 #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * w[i,j] * final_delta
 
-                #All the following is probably wrong
+                #All the following is probably wrong #TODO: Ou utiliser Y?
                 final_delta = Y[input_value] - final_value
 
                 hidden_layer_deltas = [0] * len(self.W)
