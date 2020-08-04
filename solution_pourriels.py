@@ -56,7 +56,7 @@ class Probabilite():
     P(Wi=w|C=c) = # de fois que w apparait dans tous les documents de la categorie c / # de mots total dans les docs de cat c
     """
     def probMotEtantDonneClasse(self, C, W, delta):
-        proba_mot_class = (delta+(self.freqWC[(W,C)])) / ((len(self.vocabulaire)+1)*delta + self.nbMotsParClasse[C])
+        proba_mot_class = (delta+(self.freqWC[(W,C)])) / (((len(self.vocabulaire)+1)*delta) + self.nbMotsParClasse[C])
         return proba_mot_class
 
     def __call__(self, C, W=None, delta=None):
@@ -222,8 +222,8 @@ def predire(doc, P, C, delta):
     #Sum of log P(Wi=wi | C=c)
     for i in range(len(doc)):
         word = doc[i]
-        proba_posteriori_zero += math.log(P(word, 0, delta))
-        proba_posteriori_un += math.log(P(word, 1, delta))
+        proba_posteriori_zero += math.log(P(0, word, delta))
+        proba_posteriori_un += math.log(P(1, word, delta))
 
     #Then take the max argument and return
     if proba_posteriori_zero >= proba_posteriori_un:

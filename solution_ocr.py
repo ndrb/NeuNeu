@@ -46,6 +46,7 @@ class ReseauDeNeurones:
     """
     def prediction(self, x):
         #TODO: .~= À COMPLÉTER =~.
+        
         pass
 
     """
@@ -71,22 +72,23 @@ class ReseauDeNeurones:
         # W[i,j] represents the connection between the i hidden neurone and the j input neuron
         # w[i] contains the weight between the i hidden neuron the output neurone
         # X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over
+        # Y is an array of 200 values, the classification result of every input
 
         #Build the neurones that represent the hidden layer of our net
         #Initialise a list that will be our hidden layer
         hidden_layer = [0] * len(self.W)
 
         #TODO: REMOVE
-        self.T = 5
+        self.T = 1
         for iteration in range(self.T):
-            for input in range(len(X)):
+            for input_value in range(len(X)):
                 # Populate the elements of our network
                 for i in range(len(hidden_layer)):
                     cumulative_sum = 0
                     # Calculate the value of the node, you will need the logistic function, but first you need the summation of:
                     # input_node_value*edge_weight
                     for j in range(len(self.W[i])):
-                        cumulative_sum += self.W[i, j] * X[j]
+                        cumulative_sum += self.W[i, j] * X[input_value][j]
                     hidden_layer[i] = logistic(cumulative_sum)
 
                 # Calculate final value of our last output node
@@ -95,22 +97,33 @@ class ReseauDeNeurones:
                     cumulative += hidden_layer[i] * self.w[i]
                 final_value = logistic(cumulative)
 
-                # Now that we have our network ready-ish, we want to back-propagate
-                final_delta = 1 - final_value
+
+                #Now that we have our network ready-ish, we want to back-propagate
+                #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * cumulative_sum(w(i,j)*delta[j])
+                #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * w[i,j] * final_delta
+
+                #All the following is probably wrong
+                final_delta = Y[input_value] - final_value
 
                 hidden_layer_deltas = [0] * len(self.W)
 
                 for i in range(len(hidden_layer_deltas)):
                     hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * final_delta
 
-                # TODO: We have to compare to Y before back-propagating
-                # TODO: Update the values of each weight
+                #UNRESOLVED ISSUE: We have to compare to Y before back-propagating? Why? is this not the right value?
+                #Update every weight in network using deltas
+                #for each weight w[i,j] in network do
+                #   w[i,j] = w[i,j] + alpha * a[i] * delta[j]
+                #   weight = weight + self.alpha * value_of_node * delta of node
 
-                for i in range(len(self.W)):
-                    for j in range(len(self.W[i])):
-                        # print(X[j])
-                        # print(hidden_layer_deltas[i])
-                        lol = self.W[i, j] + self.alpha * X[j] * hidden_layer_deltas[i]
-                        # print(lol)
-                        # self.W[i,j] = self.W[i,j] + self.alpha * X[j] * hidden_layer_deltas[i]
+                # We need to update the weight from hidden to output - easy
+                for outputer in range(len(self.w)):
+                    self.w[outputer] = self.w[outputer] + self.alpha * final_value * final_delta
+
+                # Then we need to update the weight from input to hidden - need two loops
+                # W[i,j] represents the connection between the i hidden neurone and the j input neuron
+                for j in range(len(X[input_value][j])):
+                    for i in range(len(hidden_layer)):
+                        self.W[i,j] = self.W[i,j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i] #TODO: Just this line should be in mise a jour
+
         pass
