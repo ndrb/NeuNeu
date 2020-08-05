@@ -6,6 +6,11 @@
 
 
 # Utiliser dbg() pour faire un break dans votre code.
+# W is the matrice de poids so it contains the values between two nodes.
+# W[i,j] represents the connection between the i hidden neurone and the j input neuron
+# w[i] contains the weight between the i hidden neuron the output neurone
+# X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over
+# Y is an array of 2000 values, the classification result of every input
 from pdb import set_trace as dbg
 import numpy as np
 
@@ -45,32 +50,52 @@ class ReseauDeNeurones:
     representee par un vecteur Numpy x. Cette prediction doit donc etre 0 ou 1.
     """
     def prediction(self, x):
-        #TODO: .~= À COMPLÉTER =~.
         hidden_layer = [0] * len(self.W)
+        #Forward-prop
+        for i in range(len(hidden_layer)):
+            cumulative_sum = 0
+            for j in range(len(self.W[i])):
+                cumulative_sum += self.W[i, j] * x[j]
+            hidden_layer[i] = logistic(cumulative_sum)
 
-        #Forward propagation
-        for input_value in range(len(x)):
-            # Populate the elements of our network
-            for i in range(len(hidden_layer)):
-                cumulative_sum = 0
-                for j in range(len(self.W[i])):
-                    cumulative_sum += self.W[i, j] * x[input_value]
-                hidden_layer[i] = logistic(cumulative_sum)
-
-            cumulative = 0
-            for i in range(len(hidden_layer)):
-                cumulative += hidden_layer[i] * self.w[i]
-            final_value = logistic(cumulative)
+        cumulative = 0
+        for i in range(len(hidden_layer)):
+            cumulative += hidden_layer[i] * self.w[i]
+        final_value = logistic(cumulative)
         return final_value
+
 
     """
     Met a jour les parametres du reseau de neurones a l'aide de sa regle
     d'apprentissage, a partir d'une entree x (vecteur Numpy) et de sa classe cible y (0 ou 1).
     """
     def mise_a_jour(self, x, y):
-        #TODO: .~= À COMPLÉTER =~.
-        # entrainement function does the looping and mise_a_jour updates the values
-        pass
+        hidden_layer = [0] * len(self.W)
+
+        #Forward-prop
+        for i in range(len(hidden_layer)):
+            cumulative_sum = 0
+            for j in range(len(self.W[i])):
+                cumulative_sum += self.W[i, j] * x[j]
+            hidden_layer[i] = logistic(cumulative_sum)
+
+        cumulative = 0
+        for i in range(len(hidden_layer)):
+            cumulative += hidden_layer[i] * self.w[i]
+        final_value = logistic(cumulative)
+
+        #Back-prop
+        final_delta = y - final_value
+        hidden_layer_deltas = [0] * len(self.W)
+        for i in range(len(hidden_layer_deltas)):
+            hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * y
+
+        for iterator in range(len(self.w)):
+            self.w[iterator] = self.w[iterator] + self.alpha * final_value * final_delta
+
+        for j in range(len(x)):
+            for i in range(len(hidden_layer)):
+                self.W[i, j] = self.W[i, j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i]
 
     """
     Entraine le reseau de neurones durant T iterations sur l'ensemble
@@ -79,57 +104,12 @@ class ReseauDeNeurones:
     d'appeler votre methode mise a jour(self, x, y) a l'interieur de entrainement(self, X, Y).
     """
     def entrainement(self, X, Y):
-        #TODO: .~= À COMPLÉTER =~.
-
-        #TRUTH:
-        # W is the matrice de poids so it contains the values between two nodes.
-        # W[i,j] represents the connection between the i hidden neurone and the j input neuron
-        # w[i] contains the weight between the i hidden neuron the output neurone
-        # X a 2D matrix of 2000 inputs, and each input has 128 values that need to be iterated over
-        # Y is an array of 200 values, the classification result of every input
-
-        #Build the neurones that represent the hidden layer of our net
-        #Initialise a list that will be our hidden layer
-        hidden_layer = [0] * len(self.W)
-
+        print(self.W)
+        print("--------------------------")
         for iteration in range(self.T):
             for input_value in range(len(X)):
-                # Populate the elements of our network
-                for i in range(len(hidden_layer)):
-                    cumulative_sum = 0
-                    # Calculate the value of the node, you will need the logistic function, but first you need the summation of:
-                    # input_node_value*edge_weight
-                    for j in range(len(self.W[i])):
-                        cumulative_sum += self.W[i, j] * X[input_value][j]
-                    hidden_layer[i] = logistic(cumulative_sum)
-
-                # Calculate final value of our last output node
-                cumulative = 0
-                for i in range(len(hidden_layer)):
-                    cumulative += hidden_layer[i] * self.w[i]
-                final_value = logistic(cumulative)
+                self.mise_a_jour(X[input_value],Y[input_value])
+                #lol = 1
+        print(self.W)
 
 
-                final_delta = Y[input_value] - final_value
-
-                hidden_layer_deltas = [0] * len(self.W)
-
-                for i in range(len(hidden_layer_deltas)):
-                    hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * Y[i]
-
-                #UNRESOLVED ISSUE: We have to compare to Y before back-propagating? Why? is this not the right value?
-                #Update every weight in network using deltas
-                #for each weight w[i,j] in network do
-                #   w[i,j] = w[i,j] + alpha * a[i] * delta[j]
-                #   weight = weight + self.alpha * value_of_node * delta of node
-
-                # We need to update the weight from hidden to output - easy
-                #TODO: We might not need this?
-                for outputer in range(len(self.w)):
-                    self.w[outputer] = self.w[outputer] + self.alpha * final_value * final_delta # This is the Y
-
-                # Then we need to update the weight from input to hidden - need two loops
-                # W[i,j] represents the connection between the i hidden neurone and the j input neuron
-                for j in range(len(X[input_value])):
-                    for i in range(len(hidden_layer)):
-                        self.W[i,j] = self.W[i,j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i] #TODO: Maybe move to mise a jour?
