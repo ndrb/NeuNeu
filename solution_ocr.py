@@ -46,8 +46,22 @@ class ReseauDeNeurones:
     """
     def prediction(self, x):
         #TODO: .~= À COMPLÉTER =~.
-        
-        pass
+        hidden_layer = [0] * len(self.W)
+
+        #Forward propagation
+        for input_value in range(len(x)):
+            # Populate the elements of our network
+            for i in range(len(hidden_layer)):
+                cumulative_sum = 0
+                for j in range(len(self.W[i])):
+                    cumulative_sum += self.W[i, j] * x[input_value]
+                hidden_layer[i] = logistic(cumulative_sum)
+
+            cumulative = 0
+            for i in range(len(hidden_layer)):
+                cumulative += hidden_layer[i] * self.w[i]
+            final_value = logistic(cumulative)
+        return final_value
 
     """
     Met a jour les parametres du reseau de neurones a l'aide de sa regle
@@ -78,8 +92,6 @@ class ReseauDeNeurones:
         #Initialise a list that will be our hidden layer
         hidden_layer = [0] * len(self.W)
 
-        #TODO: REMOVE
-        self.T = 1
         for iteration in range(self.T):
             for input_value in range(len(X)):
                 # Populate the elements of our network
@@ -98,17 +110,12 @@ class ReseauDeNeurones:
                 final_value = logistic(cumulative)
 
 
-                #Now that we have our network ready-ish, we want to back-propagate
-                #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * cumulative_sum(w(i,j)*delta[j])
-                #delta[j] = hidden_layer[i] * (1-hidden_layer[i]) * w[i,j] * final_delta
-
-                #All the following is probably wrong #TODO: Ou utiliser Y?
                 final_delta = Y[input_value] - final_value
 
                 hidden_layer_deltas = [0] * len(self.W)
 
                 for i in range(len(hidden_layer_deltas)):
-                    hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * final_delta
+                    hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * Y[i]
 
                 #UNRESOLVED ISSUE: We have to compare to Y before back-propagating? Why? is this not the right value?
                 #Update every weight in network using deltas
@@ -117,13 +124,12 @@ class ReseauDeNeurones:
                 #   weight = weight + self.alpha * value_of_node * delta of node
 
                 # We need to update the weight from hidden to output - easy
+                #TODO: We might not need this?
                 for outputer in range(len(self.w)):
-                    self.w[outputer] = self.w[outputer] + self.alpha * final_value * final_delta
+                    self.w[outputer] = self.w[outputer] + self.alpha * final_value * final_delta # This is the Y
 
                 # Then we need to update the weight from input to hidden - need two loops
                 # W[i,j] represents the connection between the i hidden neurone and the j input neuron
-                for j in range(len(X[input_value][j])):
+                for j in range(len(X[input_value])):
                     for i in range(len(hidden_layer)):
-                        self.W[i,j] = self.W[i,j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i] #TODO: Just this line should be in mise a jour
-
-        pass
+                        self.W[i,j] = self.W[i,j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i] #TODO: Maybe move to mise a jour?
