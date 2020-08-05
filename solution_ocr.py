@@ -50,8 +50,8 @@ class ReseauDeNeurones:
     representee par un vecteur Numpy x. Cette prediction doit donc etre 0 ou 1.
     """
     def prediction(self, x):
+        # Forward-prop
         hidden_layer = [0] * len(self.W)
-        #Forward-prop
         for i in range(len(hidden_layer)):
             cumulative_sum = 0
             for j in range(len(self.W[i])):
@@ -70,9 +70,8 @@ class ReseauDeNeurones:
     d'apprentissage, a partir d'une entree x (vecteur Numpy) et de sa classe cible y (0 ou 1).
     """
     def mise_a_jour(self, x, y):
-        hidden_layer = [0] * len(self.W)
-
         #Forward-prop
+        hidden_layer = [0] * len(self.W)
         for i in range(len(hidden_layer)):
             cumulative_sum = 0
             for j in range(len(self.W[i])):
@@ -90,6 +89,7 @@ class ReseauDeNeurones:
         for i in range(len(hidden_layer_deltas)):
             hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * y
 
+        #Update
         for iterator in range(len(self.w)):
             self.w[iterator] = self.w[iterator] + self.alpha * final_value * final_delta
 
@@ -104,12 +104,16 @@ class ReseauDeNeurones:
     d'appeler votre methode mise a jour(self, x, y) a l'interieur de entrainement(self, X, Y).
     """
     def entrainement(self, X, Y):
-        print(self.W)
-        print("--------------------------")
         for iteration in range(self.T):
             for input_value in range(len(X)):
                 self.mise_a_jour(X[input_value],Y[input_value])
-                #lol = 1
-        print(self.W)
 
 
+    """
+    Original:
+    Différence entre le W trouvé et celui attendu: 218.49991917808018 (Erreur!)
+    Différence entre le w trouvé et celui attendu: 122.5654918940478 (Erreur!)
+    Current:
+    Différence entre le W trouvé et celui attendu: 249.41169302953915 (Erreur!)
+    Différence entre le w trouvé et celui attendu: 125.82525393115988 (Erreur!)
+    """
