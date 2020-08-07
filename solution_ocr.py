@@ -62,7 +62,10 @@ class ReseauDeNeurones:
         for i in range(len(hidden_layer)):
             cumulative += hidden_layer[i] * self.w[i]
         final_value = logistic(cumulative)
-        return final_value
+        if final_value >= 0.5:
+            return 1
+        else:
+            return 0
 
 
     """
@@ -82,20 +85,25 @@ class ReseauDeNeurones:
         for i in range(len(hidden_layer)):
             cumulative += hidden_layer[i] * self.w[i]
         final_value = logistic(cumulative)
+        #print(final_value)
 
         #Back-prop
         final_delta = y - final_value
         hidden_layer_deltas = [0] * len(self.W)
         for i in range(len(hidden_layer_deltas)):
-            hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * y
+            hidden_layer_deltas[i] = hidden_layer[i] * (1 - hidden_layer[i]) * self.w[i] * final_delta
+
+        #print(hidden_layer_deltas)
 
         #Update
         for iterator in range(len(self.w)):
-            self.w[iterator] = self.w[iterator] + self.alpha * final_value * final_delta
+            self.w[iterator] = self.w[iterator] + self.alpha * hidden_layer[iterator] * final_delta
 
-        for j in range(len(x)):
-            for i in range(len(hidden_layer)):
-                self.W[i, j] = self.W[i, j] + self.alpha * hidden_layer[i] * hidden_layer_deltas[i]
+        #np.dot
+        #print(self.w)
+        for i in range(len(hidden_layer)):
+            for j in range(len(x)):
+                self.W[i, j] = self.W[i, j] + self.alpha * x[j] * hidden_layer_deltas[i]
 
     """
     Entraine le reseau de neurones durant T iterations sur l'ensemble
